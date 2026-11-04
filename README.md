@@ -1,8 +1,8 @@
-# Graph Sonification
+# Audiograph
 
-Explore a graph with musical notes and a screen reader. A low note is a small value, a high note is a large value, and traveling a connection plays a glide between them. Every action has a button. The tutorial is written for people who use the keyboard and a screen reader.
+A line on a grid, played as sound. When the page opens it says "Welcome to Audiograph" and speaks what every key and button does. You do not need a mouse, and you do not need to see the grid.
 
-You do not need a mouse.
+The left side is the keyboard controls. The right side is the grid and the audio scan status.
 
 ## Run
 
@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open the local address Vite prints. The tutorial is the first section under the Sound controls. Skip links at the start of the page jump to sound, the tutorial, the graph explorer, the node list, and help.
+Open the local address Vite prints. The spoken tutorial starts on its own. Press H to hear it again. Press Escape to stop the voice. Press Space to play the line.
 
 ## Tests
 

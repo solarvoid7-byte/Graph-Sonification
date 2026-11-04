@@ -1,110 +1,72 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "./App";
+import { resetSpeechGuard } from "./lib/welcome";
 
-function announcer(): string {
-  return document.getElementById("polite-announcer")?.textContent ?? "";
+function spoken(): string {
+  const synth = window.speechSynthesis as unknown as { utterances: string[] };
+  return synth.utterances.join(" ");
 }
 
-function here(): string {
-  return document.querySelector(".here")?.textContent ?? "";
-}
-
-describe("keyboard-only graph sonification", () => {
-  it("opens on a tutorial that can be moved through without a mouse", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-    expect(screen.getByRole("heading", { level: 1, name: "Graph Sonification" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Skip to graph explorer" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Step 1 of 13/ })).toBeInTheDocument();
-    expect(document.querySelector(".drawing")).toHaveAttribute("aria-hidden", "true");
-
-    await user.click(screen.getByRole("button", { name: "Back step" }));
-    await waitFor(() => expect(announcer()).toMatch(/Already the first step/));
-    await user.click(screen.getByRole("button", { name: "Next step" }));
-    expect(screen.getByRole("heading", { name: /Step 2 of 13: Turn sound on/ })).toBeInTheDocument();
+describe("Audiograph spoken tutorial", () => {
+  beforeEach(() => {
+    resetSpeechGuard();
+    (window.speechSynthesis as unknown as { utterances: string[]; speaking: boolean }).utterances = [];
+    (window.speechSynthesis as unknown as { speaking: boolean }).speaking = false;
   });
 
-  it("checks a quiz only when the answer is submitted", async () => {
-    const user = userEvent.setup();
+  it("speaks welcome and every control as soon as the page opens", async () => {
     render(<App />);
-    await user.click(screen.getByRole("radio", { name: "Escape" }));
-    await user.click(screen.getByRole("radio", { name: "Tab" }));
-    expect(announcer()).not.toMatch(/Correct/);
-    await user.click(screen.getByRole("button", { name: "Check answer" }));
-    await waitFor(() => expect(announcer()).toMatch(/Correct/));
+    expect(screen.getByRole("heading", { level: 1, name: "Audiograph" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Keyboard controls/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Graph sonification engine/i })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Audio scan paused.");
+    expect(screen.getByLabelText(/Slope m/i)).toHaveValue(2);
+    expect(screen.getByLabelText(/Constant c/i)).toHaveValue(3);
+    await waitFor(() => expect(spoken()).toMatch(/Welcome to Audiograph/));
+    expect(spoken()).toMatch(/Tutorial wizard/);
+    expect(spoken()).toMatch(/Play or pause/);
+    expect(spoken()).toMatch(/Reset grid/);
+    expect(spoken()).not.toMatch(/click|hover|look at the/i);
+    expect(screen.getByRole("heading", { name: "Spoken tutorial" })).toBeInTheDocument();
+    expect(screen.getByText(/Welcome to Audiograph/)).toBeInTheDocument();
   });
 
-  it("enables sound, travels by name and by direction, and stops at an isolated node", async () => {
+  it("resets with R, focuses slope with X, and loads practice 4 with the number key", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole("button", { name: "Enable sound" }));
-    await waitFor(() => expect(announcer()).toMatch(/Sound is on/));
-    expect(screen.getByRole("button", { name: "Replay test tone" })).toBeInTheDocument();
+    await user.keyboard("r");
+    expect(screen.getByLabelText(/Slope m/i)).toHaveValue(0);
+    expect(screen.getByLabelText(/Constant c/i)).toHaveValue(0);
+    expect(spoken()).toMatch(/Reset/);
 
-    await user.click(screen.getByRole("button", { name: "Direction right" }));
-    expect(here()).toBe("Store");
+    await user.keyboard("x");
+    expect(screen.getByLabelText(/Slope m/i)).toHaveFocus();
 
-    await user.click(screen.getByRole("button", { name: "Jump to start" }));
-    expect(here()).toBe("Home");
-    await user.click(screen.getByRole("button", { name: "Next connection" }));
-    expect(here()).toBe("Bus Stop");
-    await user.click(screen.getByRole("button", { name: "Step back" }));
-    expect(here()).toBe("Home");
-
-    const nodes = screen.getByRole("listbox", { name: "All nodes" });
-    await user.click(within(nodes).getByRole("option", { name: /Notice Board/ }));
-    expect(here()).toBe("Notice Board");
-    await user.click(screen.getByRole("button", { name: "Next connection" }));
-    expect(here()).toBe("Notice Board");
-    await waitFor(() => expect(announcer()).toMatch(/No connections from Notice Board/));
-  });
-
-  it("keeps letter keys out of buttons and the filter, and uses them inside the explorer", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-    screen.getByRole("button", { name: "Mute tones" }).focus();
-    await user.keyboard("m");
-    expect(screen.getByRole("button", { name: "Mute tones" })).toBeInTheDocument();
-
-    const filter = screen.getByRole("searchbox", { name: "Filter nodes by name" });
-    await user.click(filter);
-    await user.keyboard("m");
-    expect(screen.getByRole("button", { name: "Mute tones" })).toBeInTheDocument();
-    expect(filter).toHaveValue("m");
     await user.keyboard("{Escape}");
-    expect(filter).toHaveValue("");
-
-    const explorer = screen.getByRole("application");
-    explorer.focus();
-    await user.keyboard("m");
-    expect(screen.getByRole("button", { name: "Unmute tones" })).toBeInTheDocument();
-    await user.keyboard("{ArrowDown}");
-    expect(here()).toBe("Bus Stop");
+    await user.keyboard("4");
+    expect(screen.getByLabelText(/Slope m/i)).toHaveValue(0);
+    expect(screen.getByLabelText(/Constant c/i)).toHaveValue(5);
+    expect(spoken()).toMatch(/Practice 4/);
   });
 
-  it("closes help with Escape and restores focus", async () => {
+  it("plays and pauses the scan from the button and from Space", async () => {
     const user = userEvent.setup();
     render(<App />);
-    const help = screen.getByRole("button", { name: "Open keyboard help" });
-    await user.click(help);
-    const dialog = await screen.findByRole("dialog", { name: "Keyboard help" });
-    expect(within(dialog).getByRole("table", { name: /outside the graph explorer/i })).toBeInTheDocument();
-    await user.keyboard("{Escape}");
-    await waitFor(() => expect(help).toHaveFocus());
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Play \/ Pause/i }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Audio scan playing."));
+    await user.keyboard(" ");
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Audio scan paused."));
   });
 
-  it("switches graphs from the select and stops playback from the same button", async () => {
+  it("replays the tutorial from the tutorial button", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.selectOptions(screen.getByRole("combobox", { name: "Graph" }), "temperatures");
-    await waitFor(() => expect(here()).toBe("Monday"));
-    await user.click(screen.getByRole("button", { name: "Play the whole graph" }));
-    const stop = await screen.findByRole("button", { name: "Stop playback" });
-    await user.click(stop);
-    await waitFor(() => expect(announcer()).toMatch(/Playback stopped/));
-    expect(screen.getByRole("button", { name: "Play the whole graph" })).toBeInTheDocument();
+    await waitFor(() => expect(spoken()).toMatch(/Welcome to Audiograph/));
+    const before = spoken().length;
+    await user.click(screen.getByRole("button", { name: /Tutorial wizard/i }));
+    expect(spoken().length).toBeGreaterThan(before);
+    expect(spoken()).toMatch(/Welcome to Audiograph/);
   });
 });

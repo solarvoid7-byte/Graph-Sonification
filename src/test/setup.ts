@@ -66,8 +66,42 @@ class MockAudioContext {
   }
 }
 
+class MockUtterance {
+  lang = "en-US";
+  rate = 1;
+  text: string;
+  onend: (() => void) | null = null;
+  constructor(text: string) {
+    this.text = text;
+  }
+}
+
+const mockSynth = {
+  speaking: false,
+  utterances: [] as string[],
+  cancel() {
+    this.speaking = false;
+  },
+  speak(utterance: { text: string }) {
+    this.speaking = true;
+    this.utterances.push(utterance.text);
+  },
+  resume() {},
+  pause() {},
+  getVoices() {
+    return [];
+  },
+  addEventListener() {},
+  removeEventListener() {},
+};
+
+Object.defineProperty(window, "speechSynthesis", { configurable: true, value: mockSynth });
+Object.defineProperty(window, "SpeechSynthesisUtterance", { configurable: true, value: MockUtterance });
+
 beforeEach(() => {
   localStorage.clear();
+  mockSynth.speaking = false;
+  mockSynth.utterances = [];
   Object.defineProperty(window, "AudioContext", { writable: true, configurable: true, value: MockAudioContext });
   if (!HTMLDialogElement.prototype.showModal) {
     HTMLDialogElement.prototype.showModal = function showModal() {
