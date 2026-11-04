@@ -10,6 +10,19 @@ interface Voice {
  * Musical tones for nodes and connections.
  * Screen-reader speech is intentionally not produced here.
  */
+
+const SAFE_MASTER_GAIN = 0.08;
+
+function safeMasterGain(volume: number): number {
+  if (!Number.isFinite(volume)) return 0.05;
+  return Math.min(SAFE_MASTER_GAIN, Math.max(0, volume));
+}
+
+function safeFrequency(frequency: number): number {
+  if (!Number.isFinite(frequency)) return 392;
+  return Math.min(2000, Math.max(80, frequency));
+}
+
 export class Sonifier {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -28,12 +41,12 @@ export class Sonifier {
 
   setVolume(volume: number): void {
     this.volume = volume;
-    if (this.master && !this.muted) this.master.gain.value = volume;
+    if (this.master && !this.muted) this.master.gain.value = safeMasterGain(volume);
   }
 
   setMuted(muted: boolean): void {
     this.muted = muted;
-    if (this.master) this.master.gain.value = muted ? 0 : this.volume;
+    if (this.master) this.master.gain.value = muted ? 0 : safeMasterGain(this.volume);
   }
 
   async ensureStarted(): Promise<boolean> {
@@ -46,7 +59,7 @@ export class Sonifier {
       if (!this.ctx) {
         this.ctx = new Ctx();
         this.master = this.ctx.createGain();
-        this.master.gain.value = this.muted ? 0 : this.volume;
+        this.master.gain.value = this.muted ? 0 : safeMasterGain(this.volume);
         const destination = this.output(this.ctx);
         this.master.connect(destination);
       }
@@ -202,11 +215,11 @@ export class Sonifier {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = options.type;
-    osc.frequency.value = options.frequency;
+    osc.frequency.value = safeFrequency(options.frequency);
     const panner = this.panner(ctx, options.pan);
     const now = ctx.currentTime;
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.001, options.gain), now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(Math.min(0.2, Math.max(0.001, options.gain)), now + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + options.duration);
     osc.connect(gain);
     gain.connect(panner);
@@ -216,7 +229,7 @@ export class Sonifier {
       const overtone = ctx.createOscillator();
       const overGain = ctx.createGain();
       overtone.type = "sine";
-      overtone.frequency.value = options.frequency * 2;
+      overtone.frequency.value = safeFrequency(options.frequency * 2);
       overGain.gain.setValueAtTime(0.0001, now);
       overGain.gain.exponentialRampToValueAtTime(options.gain * 0.18, now + 0.02);
       overGain.gain.exponentialRampToValueAtTime(0.0001, now + Math.min(0.18, options.duration));
@@ -266,12 +279,12 @@ export class Sonifier {
     const gain = ctx.createGain();
     osc.type = "sine";
     const now = ctx.currentTime;
-    osc.frequency.setValueAtTime(options.fromHz, now);
-    osc.frequency.linearRampToValueAtTime(options.toHz, now + 0.28);
+    osc.frequency.setValueAtTime(safeFrequency(options.fromHz), now);
+    osc.frequency.linearRampToValueAtTime(safeFrequency(options.toHz), now + 0.28);
     const panner = this.automatedPanner(ctx, options.fromPan, options.toPan, 0.28);
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.32, now + 0.03);
-    gain.gain.setValueAtTime(0.32, now + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.2, now + 0.03);
+    gain.gain.setValueAtTime(0.2, now + 0.3);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
     osc.connect(gain);
     gain.connect(panner);

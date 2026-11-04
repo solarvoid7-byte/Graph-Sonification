@@ -176,3 +176,5 @@ button {
   }
   :focus-visible { outline: 3px solid Highlight; }
 }
+
+.shell { max-width: 40rem; margin: 2rem auto; padding: 1rem; }

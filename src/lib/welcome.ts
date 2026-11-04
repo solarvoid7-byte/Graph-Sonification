@@ -1,41 +1,26 @@
 /** Spoken once, the moment the page is parsed. Not a video. */
 export const WELCOME = [
   "Welcome to Audiograph.",
+  "Press Escape to stop this voice. Press H any time, even while you are typing a number, to hear this guide again.",
   "You do not need a mouse, and you do not need to see the page.",
   "This voice is the tutorial. It starts by itself as soon as the page opens.",
-  "Press Escape to stop this voice. Press H to hear this guide again from the start.",
-  "If you also use a screen reader, you will hear this voice and your screen reader.",
-  "Press Escape to stop this page voice and use only your screen reader. The same words are written on the page.",
-  "The page has two parts, side by side.",
-  "The left part is keyboard controls and guided inputs.",
-  "The right part is the graph sonification engine.",
-  "The right part shows a square grid, a horizontal axis, a vertical axis, and a line.",
-  "That picture is optional. The sound is the line.",
-  "Left side, from top to bottom.",
-  "First, hotkeys. They work when you are not inside a field.",
-  "If you are in a field, press Escape to leave it, then press the key.",
-  "H plays this tutorial.",
-  "Space plays or pauses the audio scan of the line.",
-  "If you are already on a button, Space activates that button instead.",
-  "The middle button is Play pause.",
-  "R resets the equation and the grid to neutral: linear, slope 0, constant 0.",
-  "X moves to the slope field.",
-  "Y moves to the constant field.",
-  "Number keys 1 through 6 load six practice lines.",
-  "Second, equation type. It is a list. It starts on Linear equation, y equals m x plus c. Slope times x, plus a constant.",
-  "Other choices are Horizontal line, y equals c, and Slope through the center, y equals m x.",
-  "With the list focused, Up and Down move, and Enter confirms.",
-  "Third, slope m, the steepness. Positive rises as the scan moves right. Negative falls. Zero is flat.",
-  "The highest is 10 and the lowest is minus 10. It starts at 2. The X key moves here.",
-  "Fourth, constant c, where the line crosses the vertical axis.",
-  "The highest is 10 and the lowest is minus 10. It starts at 3. The Y key moves here.",
-  "Fifth, three buttons in a row at the bottom of the left side.",
-  "Tutorial wizard, also H. Speaks this guide.",
-  "Play or pause, also Space. Scans the line from the left edge to the right edge.",
-  "Higher on the grid is a higher note. Toward the left is the left ear. Toward the right is the right ear.",
-  "Under the grid, the status says audio scan playing, or audio scan paused.",
-  "Reset grid, also R. Stops the scan and returns to a flat line on the horizontal axis.",
-  "You are starting on slope 2, constant 3. The line rises to the right and crosses the vertical axis at 3.",
+  "If you also use a screen reader, press Escape and use only your screen reader. The same words are written on the page.",
+  "There are two areas. First, the controls. Second, the sound of the line. A picture of the grid is also on the page, and you can ignore that picture.",
+  "H is the Tutorial wizard. It speaks this guide.",
+  "Space plays or pauses the line. If you are already on a button, Space presses that button. The middle button is Play pause.",
+  "R is Reset grid. It makes a flat line, slope 0, constant 0.",
+  "X moves to the slope box. Y moves to the constant box. Number keys 1 through 6 load practice lines.",
+  "The equation list starts on a straight line, y equals m x plus c.",
+  "You can also choose a horizontal line, a line through the center, or a sine wave. Sine uses radians, the same way a calculator does. For a sine wave, slope is how tall the wave is.",
+  "Slope is how steep a straight line is. Positive goes up as the sound moves to the right. Negative goes down. Zero is flat.",
+  "The highest number is 10 and the lowest is minus 10. Slope starts at 2. Constant starts at 3. Constant is the height where the line crosses the vertical axis.",
+  "Play or pause reads the line from left to right. Higher on the grid is a higher note. The left side is the left ear. The right side is the right ear.",
+  "A short tick marks each grid line. A brighter tick is the vertical axis, where x is 0. That moment is the y-intercept.",
+  "A low tick means the line crossed the horizontal axis, where y is 0. That moment is the x-intercept.",
+  "If the line leaves the grid, the note stays at the highest or lowest pitch. It does not get louder.",
+  "The status line says audio scan playing, or audio scan paused.",
+  "You are starting on slope 2, constant 3. The line rises and crosses the vertical axis at 3.",
+  "At the far left, that line is below the grid, so the first note stays at the lowest pitch until the line comes back on. That is expected. It does not mean the sound is broken.",
   "Press Space to hear that line.",
 ].join(" ");
 
@@ -66,12 +51,15 @@ export function speakText(text: string, force = false): boolean {
   speechLock = true;
   const synth = window.speechSynthesis;
   if (!synth || typeof SpeechSynthesisUtterance === "undefined") return false;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "en-US";
-  utter.rate = 0.95;
   try {
     synth.cancel();
-    synth.speak(utter);
+    const parts = text.split(/(?<=\.)\s+/).filter((part) => part.trim().length > 0);
+    for (const part of parts) {
+      const utter = new SpeechSynthesisUtterance(part);
+      utter.lang = "en-US";
+      utter.rate = 0.92;
+      synth.speak(utter);
+    }
     const keepAlive = window.setInterval(() => {
       if (!synth.speaking) {
         window.clearInterval(keepAlive);

@@ -60,6 +60,18 @@ describe("Audiograph spoken tutorial", () => {
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Audio scan paused."));
   });
 
+  it("repeats the tutorial when H is pressed inside the slope box", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await waitFor(() => expect(spoken()).toMatch(/Welcome to Audiograph/));
+    const slope = screen.getByLabelText(/Slope m/i);
+    slope.focus();
+    const before = spoken().length;
+    await user.keyboard("h");
+    expect(spoken().length).toBeGreaterThan(before);
+    expect(slope).toHaveFocus();
+  });
+
   it("replays the tutorial from the tutorial button", async () => {
     const user = userEvent.setup();
     render(<App />);

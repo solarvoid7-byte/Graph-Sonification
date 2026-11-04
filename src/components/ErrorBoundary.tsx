@@ -5,23 +5,26 @@ interface Props {
 }
 
 interface State {
-  message: string | null;
+  failed: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { message: null };
+  state: State = { failed: false };
 
-  static getDerivedStateFromError(error: unknown): State {
-    return { message: error instanceof Error ? error.message : "Something went wrong." };
+  static getDerivedStateFromError(): State {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: unknown): void {
+    console.error(error);
   }
 
   render() {
-    if (this.state.message) {
+    if (this.state.failed) {
       return (
         <main className="shell">
-          <h1>Graph Sonification hit a problem</h1>
-          <p>The page stopped on an unexpected error. Your place in the tutorial may still be stored in this browser.</p>
-          <p>{this.state.message}</p>
+          <h1>Audiograph needs a fresh start</h1>
+          <p>Something on the page got stuck. You did not do anything wrong. Press the button to reload, and the tutorial will speak again.</p>
           <button type="button" onClick={() => window.location.reload()}>
             Reload the page
           </button>

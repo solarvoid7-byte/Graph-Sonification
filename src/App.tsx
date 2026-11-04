@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { LineScanner, parseParam, yValue, type EquationKind } from "./audio/scan";
+import { LineScanner, describeEdit, parseParam, yValue, type EquationKind } from "./audio/scan";
 import { Plot } from "./components/Plot";
 import { PRESETS, WELCOME, speakText, speakTutorial, stopVoice } from "./lib/welcome";
 
@@ -7,12 +7,14 @@ const KINDS: { id: EquationKind; label: string }[] = [
   { id: "linear", label: "Linear Equation (y = mx + c)" },
   { id: "horizontal", label: "Horizontal line (y = c)" },
   { id: "slope", label: "Slope through the center (y = mx)" },
+  { id: "sine", label: "Sine wave (y = a sin(x) + c)" },
 ];
 
 function kindSpeech(kind: EquationKind): string {
-  if (kind === "horizontal") return "Equation type, horizontal line. Height is the constant. Slope is not used.";
-  if (kind === "slope") return "Equation type, slope through the center. The line crosses the center. Constant is not used.";
-  return "Equation type, linear. y equals slope times x, plus the constant.";
+  if (kind === "horizontal") return "Horizontal line. The height is the constant. Slope is not used.";
+  if (kind === "slope") return "Line through the center. Constant is not used. Slope is how steep it is.";
+  if (kind === "sine") return "Sine wave. Slope is how tall the wave is. Constant moves the whole wave up or down.";
+  return "Straight line. y equals slope times x, plus the constant.";
 }
 
 export function App() {
@@ -55,7 +57,12 @@ export function App() {
         setScanX(null);
         setStatus("Audio scan paused.");
         if (typing) target?.blur();
-        speakText("Stopped. The tutorial voice is off and the audio scan is paused. Press H to hear the tutorial again. Press Space to play the line.", true);
+        speakText("Stopped. Press H to hear the tutorial again. Press Space to play the line.", true);
+        return;
+      }
+      if (!event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey && event.key.toLowerCase() === "h") {
+        event.preventDefault();
+        replayTutorial();
         return;
       }
       if (typing || event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
@@ -64,11 +71,6 @@ export function App() {
         if (target?.closest("button, a")) return;
         event.preventDefault();
         void toggleScan();
-        return;
-      }
-      if (key === "h") {
-        event.preventDefault();
-        replayTutorial();
         return;
       }
       if (key === "r") {
@@ -80,14 +82,14 @@ export function App() {
         event.preventDefault();
         slopeRef.current?.focus();
         slopeRef.current?.select();
-        speakText("Slope field. Type a number from minus 10 to 10. Escape leaves this field.", true);
+        speakText("Slope box. Type a number from minus 10 to 10. Press H if you want the tutorial again. Escape leaves this box.", true);
         return;
       }
       if (key === "y") {
         event.preventDefault();
         constantRef.current?.focus();
         constantRef.current?.select();
-        speakText("Constant field. Type a number from minus 10 to 10. Escape leaves this field.", true);
+        speakText("Constant box. Type a number from minus 10 to 10. Press H if you want the tutorial again. Escape leaves this box.", true);
         return;
       }
       if (key >= "1" && key <= "6") {
@@ -147,6 +149,21 @@ export function App() {
     const started = await scanner.current?.start({
       yAt: (x) => yValue(kindRef.current, slopeValueRef.current, constantValueRef.current, x),
       onPosition: (x) => setScanX(x),
+      onVerticalAxis: () => {
+        setStatus("Audio scan playing. Vertical axis. This is the y-intercept.");
+        speakText("Vertical axis. This is the y-intercept.", true);
+      },
+      onHorizontalAxis: () => {
+        setStatus("Audio scan playing. Horizontal axis. This is the x-intercept.");
+        speakText("Horizontal axis. This is the x-intercept.", true);
+      },
+      onOffGrid: (side) => {
+        const message = side === "above"
+          ? "The line went above the grid. The note stays at the highest pitch and does not get louder."
+          : "The line went below the grid. The note stays at the lowest pitch and does not get louder.";
+        setStatus(`Audio scan playing. ${message}`);
+        speakText(message, true);
+      },
       onEnd: () => {
         setPlaying(false);
         setScanX(null);
@@ -156,7 +173,7 @@ export function App() {
     });
     if (!started) {
       setStatus("Audio scan paused.");
-      speakText("This browser could not start the audio scan. The grid and the numbers still work. Press Space to try again.", true);
+      speakText("I could not start the sound. Press the Play pause button, or press Space, to try again. The numbers still work.", true);
       return;
     }
     setPlaying(true);
@@ -165,17 +182,19 @@ export function App() {
   }
 
   function commitSlope(raw: string) {
-    const next = String(parseParam(raw));
+    const applied = parseParam(raw);
+    const next = String(applied);
     if (next === slopeText) return;
     setSlopeText(next);
-    speakText(`Slope is ${next}. Highest is 10 and lowest is minus 10.`, true);
+    speakText(describeEdit(kindRef.current === "sine" ? "Wave height" : "Slope", raw, applied), true);
   }
 
   function commitConstant(raw: string) {
-    const next = String(parseParam(raw));
+    const applied = parseParam(raw);
+    const next = String(applied);
     if (next === constantText) return;
     setConstantText(next);
-    speakText(`Constant is ${next}. Highest is 10 and lowest is minus 10.`, true);
+    speakText(describeEdit("Constant", raw, applied), true);
   }
 
   const slope = parseParam(slopeText);
@@ -230,10 +249,12 @@ export function App() {
                 ? "Horizontal line parameters"
                 : kind === "slope"
                   ? "Slope parameters"
-                  : "Linear Equation Parameters"}
+                  : kind === "sine"
+                    ? "Sine wave parameters"
+                    : "Linear Equation Parameters"}
             </legend>
             <label className="field" htmlFor="slope">
-              Slope m (X-Axis Code) [Max Limit: 10]
+              {kind === "sine" ? "Wave height a, how tall the wave is [Max Limit: 10]" : "Slope m (X-Axis Code) [Max Limit: 10]"}
               <input
                 id="slope"
                 ref={slopeRef}
