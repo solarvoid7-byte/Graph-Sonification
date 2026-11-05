@@ -1,0 +1,180 @@
+* { box-sizing: border-box; }
+
+:root {
+  color-scheme: dark;
+  font-family: Arial, "Segoe UI", "Noto Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px;
+  align-items: stretch;
+}
+
+.panel {
+  border: 2px solid #fff;
+  padding: 16px 16px 18px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+h2 {
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 1.15rem;
+  font-weight: 750;
+}
+
+.box, fieldset {
+  border: 2px solid #fff;
+  margin: 0;
+  padding: 10px 12px 12px;
+}
+
+.hotkey-title, legend, .field {
+  font-weight: 700;
+}
+
+.box ul {
+  margin: 8px 0 0;
+  padding-left: 1.2rem;
+}
+
+.box li { margin: 2px 0; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+fieldset .field:first-of-type { margin-top: 8px; }
+
+input, select, button {
+  font: inherit;
+  color: #fff;
+  background: #000;
+  border: 2px solid #fff;
+  border-radius: 0;
+  min-height: 44px;
+}
+
+input, select { width: 100%; padding: 6px 8px; }
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: auto;
+}
+
+button {
+  min-height: 72px;
+  padding: 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: 750;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+#play-scan { border-width: 4px; }
+
+.plot-frame {
+  border: 2px solid #fff;
+  padding: 8px;
+}
+
+.plot { width: 100%; height: auto; display: block; background: #000; }
+
+.grid { stroke: rgba(255, 255, 255, 0.45); stroke-width: 1; stroke-dasharray: 2 4; }
+
+.axis { stroke: #fff; stroke-width: 2; }
+
+.series { fill: none; stroke: #fff; stroke-width: 2.5; }
+
+.scan-dot { fill: #fff; }
+
+.status {
+  margin: 0;
+  border: 2px solid #fff;
+  min-height: 52px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 1.05rem;
+}
+
+.transcript {
+  margin: 0 18px 18px;
+  border: 2px solid #fff;
+  padding: 14px 16px 16px;
+}
+
+.transcript p { margin: 8px 0 0; }
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: 0;
+  transform: translateY(-120%);
+  background: #fff;
+  color: #000;
+  padding: 8px 12px;
+  z-index: 2;
+}
+
+.skip:focus { transform: none; top: 8px; }
+
+:focus-visible {
+  outline: 3px solid #ffe08a;
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  .actions { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-dot { display: none; }
+}
+
+@media (forced-colors: active) {
+  button, input, select, .panel, .box, fieldset, .status, .plot-frame {
+    border: 1px solid ButtonText;
+  }
+  :focus-visible { outline: 3px solid Highlight; }
+}
+
+.shell { max-width: 40rem; margin: 2rem auto; padding: 1rem; }
