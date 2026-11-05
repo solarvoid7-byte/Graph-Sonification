@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Graph Sonification</title>
+  <meta name="description" content="Turn 9th grade linear and quadratic graphs into sound. No account required.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav aria-label="Skip links">
+    <a class="skip" href="#equation">Skip to equation</a>
+    <a class="skip" href="#controls">Skip to controls</a>
+  </nav>
+
+  <header>
+    <h1>Graph Sonification</h1>
+    <p>Listen to a linear or quadratic graph. The page runs in your browser. There is no account and nothing to install.</p>
+  </header>
+
+  <main id="main">
+    <p id="tutorial" class="tutorial" tabindex="-1" role="status" aria-live="polite" aria-atomic="true"></p>
+
+    <section aria-labelledby="sound-heading">
+      <h2 id="sound-heading">How the sound works</h2>
+      <p>Playback walks the graph from left to right in 3 seconds. Pitch follows the height of the line: 500 + 30 × y hertz. A point at y = 10 is 800 hertz. A point at y = −10 is 200 hertz.</p>
+      <ul>
+        <li>Main pitch stays between 200 and 800 hertz. If the graph leaves y = −10 to 10, the pitch holds at that limit.</li>
+        <li>A short beep marks a crossing of the x-axis or the y-axis.</li>
+        <li>A 100 hertz hum plays while the graph is below zero.</li>
+        <li>Volume is locked at −6 dB (half level, about 75 dBA in this project). There is no volume slider.</li>
+      </ul>
+    </section>
+
+    <section id="equation" aria-labelledby="equation-heading">
+      <h2 id="equation-heading">Equation</h2>
+      <div id="form-errors" aria-live="assertive" aria-atomic="true"></div>
+      <form id="equation-form" autocomplete="off">
+        <fieldset>
+          <legend>Equation type</legend>
+          <div class="choice">
+            <input id="type-linear" type="radio" name="equation-type" value="linear" checked>
+            <label for="type-linear">Linear, y = mx + c</label>
+          </div>
+          <div class="choice">
+            <input id="type-quadratic" type="radio" name="equation-type" value="quadratic">
+            <label for="type-quadratic">Quadratic, y = ax² + bx + c</label>
+          </div>
+        </fieldset>
+
+        <fieldset id="linear-fields">
+          <legend>Linear values</legend>
+          <div class="fields">
+            <div class="field">
+              <label for="m">Slope m</label>
+              <input id="m" name="m" type="number" inputmode="decimal" step="any" spellcheck="false" aria-describedby="m-hint">
+              <p id="m-hint" class="hint">Greater than −10 and less than 10.</p>
+            </div>
+            <div class="field">
+              <label for="c-linear">Constant c</label>
+              <input id="c-linear" name="c-linear" type="number" inputmode="decimal" step="any" spellcheck="false" aria-describedby="c-linear-hint">
+              <p id="c-linear-hint" class="hint">Greater than −10 and less than 10.</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset id="quadratic-fields" hidden>
+          <legend>Quadratic values</legend>
+          <div class="fields">
+            <div class="field">
+              <label for="a">Coefficient a (x²)</label>
+              <input id="a" name="a" type="number" inputmode="decimal" step="any" spellcheck="false" aria-describedby="a-hint">
+              <p id="a-hint" class="hint">Greater than −5 and less than 5. Cannot be 0.</p>
+            </div>
+            <div class="field">
+              <label for="b">Coefficient b (x)</label>
+              <input id="b" name="b" type="number" inputmode="decimal" step="any" spellcheck="false" aria-describedby="b-hint">
+              <p id="b-hint" class="hint">Greater than −10 and less than 10.</p>
+            </div>
+            <div class="field">
+              <label for="c-quadratic">Constant c</label>
+              <input id="c-quadratic" name="c-quadratic" type="number" inputmode="decimal" step="any" spellcheck="false" aria-describedby="c-quadratic-hint">
+              <p id="c-quadratic-hint" class="hint">Greater than −10 and less than 10.</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Axis window</legend>
+          <p class="hint" id="axis-hint">Both axes stay inside −10 to 10 so the pitch stays in the safe range. Endpoints −10 and 10 are allowed.</p>
+          <div class="fields">
+            <div class="field">
+              <label for="x-min">X-axis start</label>
+              <input id="x-min" name="x-min" type="number" inputmode="decimal" step="any" value="-10" spellcheck="false" aria-describedby="axis-hint">
+            </div>
+            <div class="field">
+              <label for="x-max">X-axis end</label>
+              <input id="x-max" name="x-max" type="number" inputmode="decimal" step="any" value="10" spellcheck="false" aria-describedby="axis-hint">
+            </div>
+            <div class="field">
+              <label for="y-min">Y-axis minimum</label>
+              <input id="y-min" name="y-min" type="number" inputmode="decimal" step="any" value="-10" spellcheck="false" aria-describedby="axis-hint">
+            </div>
+            <div class="field">
+              <label for="y-max">Y-axis maximum</label>
+              <input id="y-max" name="y-max" type="number" inputmode="decimal" step="any" value="10" spellcheck="false" aria-describedby="axis-hint">
+            </div>
+          </div>
+        </fieldset>
+      </form>
+      <p id="equation-preview">No equation yet. Enter values, or load a test equation below.</p>
+    </section>
+
+    <section id="controls" aria-labelledby="controls-heading">
+      <h2 id="controls-heading">Controls</h2>
+      <div class="actions">
+        <button type="button" id="play-btn" aria-label="Play graph sound">Play graph sound</button>
+        <button type="button" id="pause-btn" aria-label="Pause" disabled>Pause</button>
+        <button type="button" id="reset-btn" aria-label="Reset grid">Reset grid</button>
+        <button type="button" id="voice-btn" aria-label="Start voice commands" aria-pressed="false">Start voice commands</button>
+      </div>
+      <div
+        id="progress"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        aria-valuetext="Not playing"
+        aria-labelledby="controls-heading"
+      >
+        <span id="progress-bar"></span>
+      </div>
+      <div id="status" role="status" aria-live="polite" aria-atomic="true">The tutorial will speak first. The keyboard does the rest.</div>
+    </section>
+
+    <section aria-labelledby="graph-heading">
+      <h2 id="graph-heading">Graph</h2>
+      <figure>
+        <svg id="graph" viewBox="0 0 640 448" role="img" aria-labelledby="graph-title graph-caption">
+          <title id="graph-title">Graph of the current equation</title>
+          <line id="axis-x" x1="48" y1="210" x2="600" y2="210"></line>
+          <line id="axis-y" x1="324" y1="28" x2="324" y2="392"></line>
+          <polyline id="curve" points=""></polyline>
+          <line id="playhead" x1="48" y1="28" x2="48" y2="392" visibility="hidden"></line>
+          <text id="label-x-min" x="48" y="414">−10</text>
+          <text id="label-x-max" x="560" y="414">10</text>
+          <text id="label-y-max" x="8" y="36">10</text>
+          <text id="label-y-min" x="8" y="396">−10</text>
+        </svg>
+        <figcaption id="graph-caption">Enter a valid equation to draw the graph.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="examples-heading">
+      <h2 id="examples-heading">Test equations</h2>
+      <p>These six equations are the project checks. Loading one fills the boxes. It does not start the sound.</p>
+      <div class="actions">
+        <button type="button" class="example" data-type="linear" data-m="2" data-c="3">Load y = 2x + 3</button>
+        <button type="button" class="example" data-type="linear" data-m="-1" data-c="2">Load y = −x + 2</button>
+        <button type="button" class="example" data-type="linear" data-m="0.5" data-c="0">Load y = 0.5x</button>
+        <button type="button" class="example" data-type="quadratic" data-a="1" data-b="0" data-c="-4">Load y = x² − 4</button>
+        <button type="button" class="example" data-type="quadratic" data-a="-0.5" data-b="0" data-c="5">Load y = −0.5x² + 5</button>
+        <button type="button" class="example" data-type="quadratic" data-a="2" data-b="0" data-c="1">Load y = 2x² + 1</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="help-heading">
+      <h2 id="help-heading">Keyboard, voice, and safety</h2>
+      <h3>Keyboard</h3>
+      <dl class="keys">
+        <dt><kbd>J</kbd></dt>
+        <dd>Choose a linear equation.</dd>
+        <dt><kbd>F</kbd></dt>
+        <dd>Choose a quadratic equation.</dd>
+        <dt><kbd>Enter</kbd></dt>
+        <dd>Confirm the number you just typed. On a button, Enter activates that button.</dd>
+        <dt><kbd>Space</kbd></dt>
+        <dd>Start the graph sound. Press Space again to stop it.</dd>
+        <dt><kbd>Tab</kbd></dt>
+        <dd>Move to the next box or button. <kbd>Shift</kbd> + <kbd>Tab</kbd> moves backward.</dd>
+        <dt>Arrow keys</dt>
+        <dd>Change the selected number.</dd>
+      </dl>
+      <h3>Voice</h3>
+      <p>Turn voice commands on, then say exactly “Play”, “Pause”, or “Reset”. The page says “Listening” when the microphone opens, and plays a short tone when it closes.</p>
+      <p>Chrome and Safari can listen. Firefox uses the keyboard. A page opened as a file may block the microphone; keyboard playback still works.</p>
+      <h3>What to listen for</h3>
+      <ul>
+        <li>y = 2x + 3 rises.</li>
+        <li>y = −x + 2 falls.</li>
+        <li>y = 0.5x rises more slowly and beeps at the origin.</li>
+        <li>y = x² − 4 falls, then rises.</li>
+        <li>y = −0.5x² + 5 rises, then falls. The hum appears when it goes below zero.</li>
+        <li>y = 2x² + 1 climbs quickly away from the middle.</li>
+      </ul>
+      <h3>Ear safety</h3>
+      <p>If a value is outside the allowed limits, playback does not start and a 400 hertz tone plays. The axis beep is 50 milliseconds at 800 hertz, the top of the safe range. The plan mentioned 1000 hertz; that pitch is above the success-criteria limit, so it is not used.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Free classroom page. No login, no download, no server.</p>
+  </footer>
+
+  <noscript>
+    <p>This page needs JavaScript for the sound. Enable JavaScript and open the page again.</p>
+  </noscript>
+
+  <script src="app.js"></script>
+</body>
+</html>

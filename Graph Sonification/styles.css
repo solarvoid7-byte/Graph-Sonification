@@ -1,0 +1,332 @@
+/* Black and white only. White on black is 21:1, above the 7:1 target. */
+
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --fg: #ffffff;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 1.5rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+header,
+main,
+footer {
+  width: min(46rem, 100%);
+  margin-inline: auto;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 0 0 0.75rem;
+}
+
+.tutorial {
+  margin: 0 0 1.5rem;
+  padding: 1rem;
+  border: 2px solid #ffffff;
+  font-weight: 700;
+  min-height: 4.5rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin: 2rem 0 0.75rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+p,
+li,
+dd {
+  max-width: 66ch;
+}
+
+p {
+  margin-block: 0 1.5rem;
+}
+
+ul,
+ol {
+  margin-block: 0 1.5rem;
+  padding-left: 1.25rem;
+}
+
+a {
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -6rem;
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  padding: 0.5rem 0.75rem;
+  z-index: 2;
+}
+
+.skip:focus {
+  top: 1rem;
+}
+
+fieldset {
+  margin: 0 0 1.5rem;
+  padding: 1rem;
+  border: 2px solid #ffffff;
+}
+
+legend {
+  padding: 0 0.4rem;
+  font-weight: 700;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  min-width: 12rem;
+}
+
+.hint {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+label {
+  font-weight: 700;
+}
+
+input,
+button {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 0;
+  box-shadow: none;
+  font: inherit;
+  line-height: 1.4;
+}
+
+input {
+  width: 100%;
+  max-width: 12rem;
+  min-height: 3rem;
+  padding: 0.4rem 0.6rem;
+}
+
+input[type="radio"] {
+  appearance: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  min-height: 0;
+  max-width: none;
+  margin: 0;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #000000;
+  flex: 0 0 auto;
+}
+
+input[type="radio"]:checked {
+  background: radial-gradient(circle at center, #000000 0 0.28rem, #ffffff 0.32rem);
+  box-shadow: none;
+}
+
+button {
+  min-height: 3rem;
+  min-width: 10rem;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  border-style: dotted;
+  color: #ffffff;
+  background: #000000;
+  cursor: not-allowed;
+}
+
+input:focus,
+button:focus,
+a:focus {
+  outline: 4px solid #ffffff;
+  outline-offset: 3px;
+}
+
+input[type="number"]:focus,
+button:focus {
+  box-shadow: none;
+}
+
+input[type="radio"]:checked:focus {
+  box-shadow: inset 0 0 0 0.28rem #000000;
+}
+
+input:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
+  box-shadow: inset 0 0 0 1000px #000000;
+}
+
+::placeholder {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+#progress {
+  width: 100%;
+  height: 1.25rem;
+  border: 2px solid #ffffff;
+  margin-bottom: 1rem;
+}
+
+#progress-bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #ffffff;
+}
+
+#status,
+#form-errors {
+  min-height: 1.5em;
+  font-weight: 700;
+}
+
+#form-errors:empty {
+  min-height: 0;
+  margin: 0;
+}
+
+#equation-preview,
+#graph-caption,
+footer p {
+  font-weight: 700;
+}
+
+figure {
+  margin: 0 0 1.5rem;
+}
+
+#graph {
+  width: 100%;
+  height: auto;
+  background: #000000;
+  border: 2px solid #ffffff;
+  display: block;
+}
+
+#graph line,
+#graph polyline {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 3;
+}
+
+#curve {
+  stroke-width: 4;
+}
+
+#playhead {
+  stroke-width: 4;
+}
+
+#graph text {
+  fill: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 18px;
+}
+
+.keys {
+  margin: 0 0 1.5rem;
+}
+
+.keys dt {
+  margin-top: 0.75rem;
+  font-weight: 700;
+}
+
+.keys dd {
+  margin: 0.25rem 0 0;
+}
+
+kbd {
+  border: 2px solid #ffffff;
+  padding: 0.05rem 0.35rem;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+footer {
+  margin-top: 1rem;
+  padding-bottom: 2rem;
+}
+
+@media (forced-colors: active) {
+  input,
+  button,
+  fieldset,
+  #graph,
+  #progress,
+  kbd,
+  .skip {
+    border-color: ButtonText;
+  }
+
+  input:focus,
+  button:focus,
+  a:focus {
+    outline-color: Highlight;
+  }
+}
