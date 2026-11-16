@@ -19,8 +19,8 @@ describe("Audiograph spoken tutorial", () => {
   it("speaks welcome and every control as soon as the page opens", async () => {
     render(<App />);
     expect(screen.getByRole("heading", { level: 1, name: "Audiograph" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Keyboard controls/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Graph sonification engine/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Controls" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Graph" })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("Audio scan paused.");
     expect(screen.getByLabelText(/Slope m/i)).toHaveValue(2);
     expect(screen.getByLabelText(/Constant c/i)).toHaveValue(3);
@@ -54,7 +54,7 @@ describe("Audiograph spoken tutorial", () => {
   it("plays and pauses the scan from the button and from Space", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole("button", { name: /Play \/ Pause/i }));
+    await user.click(screen.getByRole("button", { name: /^Play/i }));
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Audio scan playing."));
     await user.keyboard(" ");
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Audio scan paused."));
@@ -77,7 +77,7 @@ describe("Audiograph spoken tutorial", () => {
     render(<App />);
     await waitFor(() => expect(spoken()).toMatch(/Welcome to Audiograph/));
     const before = spoken().length;
-    await user.click(screen.getByRole("button", { name: /Tutorial wizard/i }));
+    await user.click(screen.getByRole("button", { name: /Tutorial/i }));
     expect(spoken().length).toBeGreaterThan(before);
     expect(spoken()).toMatch(/Welcome to Audiograph/);
   });
