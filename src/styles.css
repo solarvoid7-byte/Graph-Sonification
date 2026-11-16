@@ -7,63 +7,84 @@
   line-height: 1.4;
 }
 
+html, body, #root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   background: #000;
   color: #fff;
+  overflow: hidden;
 }
 
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 18px;
-  padding: 18px;
-  align-items: stretch;
+  gap: 10px;
+  height: 100dvh;
+  padding: 10px;
+  overflow: hidden;
 }
 
 .panel {
   border: 2px solid #fff;
-  padding: 16px 16px 18px;
+  padding: 10px 12px;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
+  overflow: hidden;
 }
 
 h2 {
   margin: 0;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  font-size: 0.95rem;
   font-weight: 750;
 }
 
-.box, fieldset {
-  border: 2px solid #fff;
+fieldset {
+  border: 0;
   margin: 0;
-  padding: 10px 12px 12px;
+  padding: 0;
+  min-width: 0;
 }
 
-.hotkey-title, legend, .field {
+.keys {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.keys li {
+  border: 2px solid #fff;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-weight: 700;
+  font-size: 0.9rem;
 }
 
-.box ul {
-  margin: 8px 0 0;
-  padding-left: 1.2rem;
+kbd {
+  font: inherit;
+  font-weight: 750;
 }
-
-.box li { margin: 2px 0; }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 4px;
+  font-weight: 700;
 }
-
-fieldset .field:first-of-type { margin-top: 8px; }
 
 input, select, button {
   font: inherit;
@@ -71,7 +92,7 @@ input, select, button {
   background: #000;
   border: 2px solid #fff;
   border-radius: 0;
-  min-height: 44px;
+  min-height: 36px;
 }
 
 input, select { width: 100%; padding: 6px 8px; }
@@ -84,8 +105,8 @@ input, select { width: 100%; padding: 6px 8px; }
 }
 
 button {
-  min-height: 72px;
-  padding: 8px;
+  min-height: 44px;
+  padding: 4px 8px;
   cursor: pointer;
   text-transform: uppercase;
   font-weight: 750;
@@ -93,17 +114,34 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 0;
+  line-height: 1.1;
+}
+
+button span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 #play-scan { border-width: 4px; }
 
 .plot-frame {
   border: 2px solid #fff;
-  padding: 8px;
+  padding: 6px;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
 }
 
-.plot { width: 100%; height: auto; display: block; background: #000; }
+.plot {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  display: block;
+  background: #000;
+}
 
 .grid { stroke: rgba(255, 255, 255, 0.45); stroke-width: 1; stroke-dasharray: 2 4; }
 
@@ -116,20 +154,16 @@ button {
 .status {
   margin: 0;
   border: 2px solid #fff;
-  min-height: 52px;
+  min-height: 36px;
+  max-height: 3.2rem;
+  overflow: hidden;
   display: grid;
   place-items: center;
   text-align: center;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  padding: 4px 8px;
 }
-
-.transcript {
-  margin: 0 18px 18px;
-  border: 2px solid #fff;
-  padding: 14px 16px 16px;
-}
-
-.transcript p { margin: 8px 0 0; }
 
 .skip {
   position: absolute;
@@ -161,9 +195,16 @@ button {
   border: 0;
 }
 
-@media (max-width: 860px) {
-  .layout { grid-template-columns: 1fr; }
-  .actions { grid-template-columns: 1fr; }
+@media (max-width: 720px) {
+  body { overflow: auto; }
+  .layout {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+  .panel { overflow: visible; }
+  .plot { width: 100%; height: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

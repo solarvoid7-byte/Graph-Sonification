@@ -4,10 +4,10 @@ import { Plot } from "./components/Plot";
 import { PRESETS, WELCOME, speakText, speakTutorial, stopVoice } from "./lib/welcome";
 
 const KINDS: { id: EquationKind; label: string }[] = [
-  { id: "linear", label: "Linear Equation (y = mx + c)" },
-  { id: "horizontal", label: "Horizontal line (y = c)" },
-  { id: "slope", label: "Slope through the center (y = mx)" },
-  { id: "sine", label: "Sine wave (y = a sin(x) + c)" },
+  { id: "linear", label: "y = mx + c" },
+  { id: "horizontal", label: "y = c" },
+  { id: "slope", label: "y = mx" },
+  { id: "sine", label: "y = a sin(x) + c" },
 ];
 
 function kindSpeech(kind: EquationKind): string {
@@ -150,18 +150,18 @@ export function App() {
       yAt: (x) => yValue(kindRef.current, slopeValueRef.current, constantValueRef.current, x),
       onPosition: (x) => setScanX(x),
       onVerticalAxis: () => {
-        setStatus("Audio scan playing. Vertical axis. This is the y-intercept.");
+        setStatus("Playing. Y-intercept.");
         speakText("Vertical axis. This is the y-intercept.", true);
       },
       onHorizontalAxis: () => {
-        setStatus("Audio scan playing. Horizontal axis. This is the x-intercept.");
+        setStatus("Playing. X-intercept.");
         speakText("Horizontal axis. This is the x-intercept.", true);
       },
       onOffGrid: (side) => {
         const message = side === "above"
           ? "The line went above the grid. The note stays at the highest pitch and does not get louder."
           : "The line went below the grid. The note stays at the lowest pitch and does not get louder.";
-        setStatus(`Audio scan playing. ${message}`);
+        setStatus(side === "above" ? "Playing. Above the grid." : "Playing. Below the grid.");
         speakText(message, true);
       },
       onEnd: () => {
@@ -211,21 +211,18 @@ export function App() {
       <h1 className="sr-only">Audiograph</h1>
       <div className="layout">
         <section className="panel" aria-labelledby="controls-title">
-          <h2 id="controls-title">Keyboard controls &amp; guided inputs</h2>
-          <div className="box">
-            <p className="hotkey-title">Hotkeys (Zero Mouse Required):</p>
-            <ul>
-              <li>Press H: Play Audio Tutorial &amp; Start Guided Setup Wizard</li>
-              <li>Press Spacebar: Play or Pause Audio Graph Scan</li>
-              <li>Press R: Reset Equations &amp; Grid to Neutral</li>
-              <li>Press X: Jump directly to X-Axis / Slope Input</li>
-              <li>Press Y: Jump directly to Y-Axis / Constant Input</li>
-              <li>Press Keys 1-6: Instantly load target test equations</li>
-            </ul>
-          </div>
+          <h2 id="controls-title">Controls</h2>
+          <ul className="keys">
+            <li><kbd>H</kbd> Tutorial</li>
+            <li><kbd>Space</kbd> Play</li>
+            <li><kbd>R</kbd> Reset</li>
+            <li><kbd>X</kbd> Slope</li>
+            <li><kbd>Y</kbd> Constant</li>
+            <li><kbd>1–6</kbd> Lines</li>
+          </ul>
 
           <label className="field" htmlFor="equation-type">
-            Select Equation Type
+            Equation
             <select
               id="equation-type"
               value={kind}
@@ -244,17 +241,11 @@ export function App() {
           </label>
 
           <fieldset>
-            <legend>
-              {kind === "horizontal"
-                ? "Horizontal line parameters"
-                : kind === "slope"
-                  ? "Slope parameters"
-                  : kind === "sine"
-                    ? "Sine wave parameters"
-                    : "Linear Equation Parameters"}
+            <legend className="sr-only">
+              {kind === "sine" ? "Sine wave numbers" : "Line numbers"}
             </legend>
             <label className="field" htmlFor="slope">
-              {kind === "sine" ? "Wave height a, how tall the wave is [Max Limit: 10]" : "Slope m (X-Axis Code) [Max Limit: 10]"}
+              {kind === "sine" ? "Wave height a" : "Slope m"}
               <input
                 id="slope"
                 ref={slopeRef}
@@ -269,7 +260,7 @@ export function App() {
               />
             </label>
             <label className="field" htmlFor="constant">
-              Constant c (Y-Axis Code) [Max Limit: 10]
+              Constant c
               <input
                 id="constant"
                 ref={constantRef}
@@ -287,22 +278,22 @@ export function App() {
 
           <div className="actions">
             <button type="button" onClick={replayTutorial}>
-              Tutorial wizard
-              <span>(H)</span>
+              Tutorial
+              <span>H</span>
             </button>
             <button id="play-scan" type="button" aria-pressed={playing} onClick={() => void toggleScan()}>
-              Play / Pause
-              <span>(Space)</span>
+              {playing ? "Pause" : "Play"}
+              <span>Space</span>
             </button>
             <button type="button" onClick={resetGrid}>
-              Reset grid
-              <span>(R)</span>
+              Reset
+              <span>R</span>
             </button>
           </div>
         </section>
 
         <section className="panel" aria-labelledby="engine-title">
-          <h2 id="engine-title">Graph sonification engine</h2>
+          <h2 id="engine-title">Graph</h2>
           <div className="plot-frame">
             <Plot kind={kind} slope={slope} constant={constant} scanX={scanX} />
           </div>
@@ -314,7 +305,7 @@ export function App() {
           </p>
         </section>
       </div>
-      <section className="transcript" aria-labelledby="transcript-title">
+      <section className="sr-only" aria-labelledby="transcript-title">
         <h2 id="transcript-title">Spoken tutorial</h2>
         <p>{WELCOME}</p>
       </section>
